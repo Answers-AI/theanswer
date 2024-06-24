@@ -47,7 +47,7 @@ export const Badge = (props: Props) => {
       Powered by
       <a
         ref={liteBadge}
-        href={'https://theanswer.ai/'}
+        href={'https://lastrev.com/realcomm'}
         target="_blank"
         rel="noopener noreferrer"
         class="lite-badge"
