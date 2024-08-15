@@ -254,7 +254,11 @@ class ChatflowTool extends StructuredTool {
         _?: CallbackManagerForToolRun,
         flowConfig?: { sessionId?: string; chatId?: string; input?: string }
     ): Promise<string> {
+        console.log('CustomTool _call method called with args:', JSON.stringify(arg))
+        console.log('FlowConfig:', JSON.stringify(flowConfig))
+
         const inputQuestion = this.input || arg.input
+        console.log('Input question:', inputQuestion)
 
         const body = {
             question: inputQuestion,
@@ -263,6 +267,7 @@ class ChatflowTool extends StructuredTool {
                 sessionId: this.startNewSession ? uuidv4() : flowConfig?.sessionId
             }
         }
+        console.log('Request body:', JSON.stringify(body))
 
         const options = {
             method: 'POST',
@@ -272,6 +277,7 @@ class ChatflowTool extends StructuredTool {
             },
             body: JSON.stringify(body)
         }
+        console.log('Request options:', JSON.stringify(options))
 
         let sandbox = { $callOptions: options, $callBody: body }
 
@@ -309,6 +315,7 @@ try {
 
         const vm = new NodeVM(vmOptions)
         const response = await vm.run(`module.exports = async function() {${code}}()`, __dirname)
+        console.log('CustomTool response:', response)
 
         return response
     }

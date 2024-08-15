@@ -466,6 +466,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
     }
 
     const updateLastMessageUsedTools = (usedTools) => {
+        console.log('Updating last message used tools:', usedTools)
         setMessages((prevMessages) => {
             let allMessages = [...cloneDeep(prevMessages)]
             if (allMessages[allMessages.length - 1].type === 'userMessage') return allMessages
@@ -1257,6 +1258,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                                         }}
                                                                     >
                                                                         {removeDuplicateURL(agent).map((source, index) => {
+                                                                            console.log('Rendering chip for source:', source)
                                                                             const URL =
                                                                                 source && source.metadata && source.metadata.source
                                                                                     ? isValidURL(source.metadata.source)
@@ -1294,21 +1296,30 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                     width: '100%'
                                                 }}
                                             >
-                                                {message.usedTools.map((tool, index) => {
-                                                    return tool ? (
-                                                        <Chip
-                                                            size='small'
-                                                            key={index}
-                                                            label={tool.tool}
-                                                            component='a'
-                                                            sx={{ mr: 1, mt: 1 }}
-                                                            variant='outlined'
-                                                            clickable
-                                                            icon={<IconTool size={15} />}
-                                                            onClick={() => onSourceDialogClick(tool, 'Used Tools')}
-                                                        />
-                                                    ) : null
-                                                })}
+                                                {message.usedTools && (
+                                                    <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
+                                                        <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
+                                                            <p>Debug: Tools should appear here</p>
+                                                        </div>
+                                                        {console.log('Used tools:', message.usedTools)}
+                                                        {message.usedTools.map((tool, toolIndex) => {
+                                                            console.log(`Rendering tool ${toolIndex}:`, tool)
+                                                            return tool ? (
+                                                                <Chip
+                                                                    size='small'
+                                                                    key={toolIndex}
+                                                                    label={tool.tool}
+                                                                    component='a'
+                                                                    sx={{ mr: 1, mt: 1 }}
+                                                                    variant='outlined'
+                                                                    clickable
+                                                                    icon={<IconTool size={15} />}
+                                                                    onClick={() => onSourceDialogClick(tool, 'Used Tools')}
+                                                                />
+                                                            ) : null
+                                                        })}
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
                                         <div className='markdownanswer'>

@@ -1246,6 +1246,7 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
             'conversationalRetrievalAgent',
             'openAIToolAgent',
             'toolAgent',
+            'answerAISidekick',
             'openAIToolAgentLlamaIndex'
         ]
         isValidChainOrAgent = whitelistAgents.includes(endingNodeData.name)

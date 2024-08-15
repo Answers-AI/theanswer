@@ -57,11 +57,14 @@ const getAllChatflows = async (req: Request, res: Response, next: NextFunction) 
             return res.status(401).send('Unauthorized')
         }
         const filter = req.query.filter ? JSON.parse(decodeURIComponent(req.query.filter as string)) : undefined
+        const type = req.query.type as ChatflowType
+        console.log('GETTING TYPES', type)
         const apiResponse = await chatflowsService.getAllChatflows(
             req.query?.type as ChatflowType,
             { ...res.locals.filter, ...filter },
             req.user
         )
+        console.log('ITEMS RETRIEVED', apiResponse)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

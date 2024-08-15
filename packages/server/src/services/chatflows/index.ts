@@ -177,10 +177,15 @@ const getAllChatflows = async (type?: ChatflowType, filter?: ChatflowsFilter, us
         if (!(await checkOwnership(dbResponse, user))) {
             throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
         }
+        // Filter chatflows based on the type parameter
         if (type === 'MULTIAGENT') {
-            return dbResponse.filter((chatflow) => chatflow.type === type)
+            return dbResponse.filter((chatflow) => chatflow.type === 'MULTIAGENT')
+        } else if (type === 'SIDEKICK') {
+            return dbResponse.filter((chatflow) => chatflow.type === 'SIDEKICK')
+        } else {
+            // Return all chatflows that are not of type 'MULTIAGENT'
+            return dbResponse.filter((chatflow) => chatflow.type !== 'MULTIAGENT')
         }
-        return dbResponse.filter((chatflow) => chatflow.type === 'CHATFLOW' || !chatflow.type)
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,

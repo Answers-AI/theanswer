@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux'
 
 import { ThemeProvider } from '@mui/material/styles'
 import { Button, CssBaseline, StyledEngineProvider } from '@mui/material'
+import { BubbleChat } from 'aai-embed-react'
 
 // routing
 import Routes from '@/routes'
@@ -41,6 +42,7 @@ const App = () => {
                 }
             )
             // TODO: remove replace
+            console.log('USER BRAD', user)
             sessionStorage.setItem('baseURL', user.chatflowDomain?.replace('8080', '4000'))
         }
     }, [user, flagsmith])

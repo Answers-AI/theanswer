@@ -44,6 +44,14 @@ const dashboard = {
             breadcrumbs: true
         },
         {
+            id: 'sidekicks',
+            title: 'Sidekicks',
+            type: 'item',
+            url: '/sidekicks',
+            icon: IconRobot,
+            breadcrumbs: false
+        },
+        {
             id: 'journeys',
             title: 'Journeys',
             type: 'item',

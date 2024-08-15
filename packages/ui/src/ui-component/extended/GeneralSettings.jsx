@@ -5,6 +5,8 @@ import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import TextField from '@mui/material/TextField'
 import Button from '@mui/material/Button'
+import Switch from '@mui/material/Switch'
+import FormControlLabel from '@mui/material/FormControlLabel'
 import { enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
 import chatflowsApi from '@/api/chatflows'
 import { SET_CHATFLOW } from '@/store/actions'
@@ -15,12 +17,14 @@ const GeneralSettings = ({ dialogProps }) => {
     const [title, setTitle] = useState('')
     const [description, setDescription] = useState('')
     const [categories, setCategories] = useState([])
+    const [isSidekick, setIsSidekick] = useState(false)
 
     useEffect(() => {
         if (dialogProps?.chatflow) {
             setTitle(dialogProps.chatflow.name || '')
             setDescription(dialogProps.chatflow.description || '')
             setCategories(dialogProps.chatflow.category ? dialogProps.chatflow.category.split(';') : [])
+            setIsSidekick(dialogProps.chatflow.type === 'SIDEKICK')
         }
     }, [dialogProps])
 
@@ -29,7 +33,8 @@ const GeneralSettings = ({ dialogProps }) => {
             const saveResp = await chatflowsApi.updateChatflow(dialogProps.chatflow.id, {
                 name: title,
                 description: description,
-                category: categories.join(';')
+                category: categories.join(';'),
+                type: isSidekick ? 'SIDEKICK' : 'CHATFLOW'
             })
             if (saveResp.data) {
                 dispatch({ type: SET_CHATFLOW, chatflow: saveResp.data })
@@ -56,6 +61,10 @@ const GeneralSettings = ({ dialogProps }) => {
             <Typography variant='h4' gutterBottom>
                 General Settings
             </Typography>
+            <FormControlLabel
+                control={<Switch checked={isSidekick} onChange={(e) => setIsSidekick(e.target.checked)} />}
+                label='Promote to Sidekick'
+            />
             <TextField fullWidth label='Chatflow Title' value={title} onChange={(e) => setTitle(e.target.value)} margin='normal' />
             <TextField
                 fullWidth
@@ -85,7 +94,8 @@ GeneralSettings.propTypes = {
             id: PropTypes.string.isRequired,
             name: PropTypes.string,
             description: PropTypes.string,
-            category: PropTypes.string
+            category: PropTypes.string,
+            type: PropTypes.string
         }).isRequired
     }).isRequired
 }

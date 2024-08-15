@@ -7,7 +7,7 @@ import SidebarNodeItem from './SidebarNodeItem'
 import nodesApi from '@/api/nodes'
 import SidebarToolModal from './SidebarToolModal'
 
-const Sidebar = ({ chatflows, selectedChatflow, setSelectedChatflow, setOverrideConfig }) => {
+const Sidebar = ({ chatflows, selectedChatflow, setSelectedChatflow, setOverrideConfig, isSidekickPage = false }) => {
     const [chatflowNodes, setChatflowNodes] = useState({})
     const [nodeConfigs, setNodeConfigs] = useState({})
     const [isToolModalOpen, setIsToolModalOpen] = useState(false)
@@ -174,15 +174,17 @@ const Sidebar = ({ chatflows, selectedChatflow, setSelectedChatflow, setOverride
 
     return (
         <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
-            <ListItem sx={{ width: '100%' }}>
-                <Select value={selectedChatflow} onChange={handleChatflowChange} fullWidth>
-                    {chatflows.map((chatflow) => (
-                        <MenuItem key={chatflow.id} value={chatflow.id}>
-                            {chatflow.name}
-                        </MenuItem>
-                    ))}
-                </Select>
-            </ListItem>
+            {!isSidekickPage && (
+                <ListItem sx={{ width: '100%' }}>
+                    <Select value={selectedChatflow} onChange={handleChatflowChange} fullWidth>
+                        {chatflows.map((chatflow) => (
+                            <MenuItem key={chatflow.id} value={chatflow.id}>
+                                {chatflow.name}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </ListItem>
+            )}
             <Collapse in={Boolean(selectedChatflow)} timeout='auto' unmountOnExit sx={{ width: '100%' }}>
                 <List component='div' disablePadding sx={{ width: '100%' }}>
                     {selectedChatflow &&
@@ -232,7 +234,8 @@ Sidebar.propTypes = {
     chatflows: PropTypes.array.isRequired,
     selectedChatflow: PropTypes.string.isRequired,
     setSelectedChatflow: PropTypes.func.isRequired,
-    setOverrideConfig: PropTypes.func.isRequired
+    setOverrideConfig: PropTypes.func.isRequired,
+    isSidekickPage: PropTypes.bool
 }
 
 export default React.memo(Sidebar)

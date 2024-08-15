@@ -9,8 +9,10 @@ export let baseURL =
     typeof window !== 'undefined'
         ? process.env.PROD === true
             ? window.location.origin
-            : window.location.origin.replace(`:${process.env.VITE_PORT ?? '8080'}`, ':4000')
+            : window.location.origin.replace(`:${process.env.VITE_PORT ?? '4000'}`, ':4000')
         : process.env.BASE_URL || 'http://localhost:4000'
+
+console.log('BASE URL', baseURL)
 
 if (typeof sessionStorage !== 'undefined') {
     baseURL = sessionStorage.getItem('baseURL') || baseURL

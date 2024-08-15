@@ -4,7 +4,7 @@ import { ChatflowVisibility } from './database/entities/ChatFlow'
 
 export type MessageType = 'apiMessage' | 'userMessage'
 
-export type ChatflowType = 'CHATFLOW' | 'MULTIAGENT'
+export type ChatflowType = 'CHATFLOW' | 'MULTIAGENT' | 'SIDEKICK'
 
 export enum chatType {
     INTERNAL = 'INTERNAL',
