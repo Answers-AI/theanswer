@@ -1,5 +1,6 @@
 import { IAction } from 'flowise-components'
 import { ICommonObject, IFileUpload, INode, INodeData as INodeDataFromComponent, INodeParams } from 'flowise-components'
+import { ChatflowVisibility } from './database/entities/ChatFlow'
 
 export type MessageType = 'apiMessage' | 'userMessage'
 
@@ -17,6 +18,23 @@ export enum ChatMessageRatingType {
 /**
  * Databases
  */
+export interface IUser {
+    id: string
+    name: string
+    email: string
+    organizationId?: string
+    updatedDate: Date
+    createdDate: Date
+    permissions?: string[]
+    roles?: string[]
+}
+export interface IOrganization {
+    id: string
+    name: string
+    updatedDate: Date
+    createdDate: Date
+}
+
 export interface IChatFlow {
     id: string
     name: string
@@ -30,7 +48,10 @@ export interface IChatFlow {
     chatbotConfig?: string
     apiConfig?: string
     category?: string
+    visibility?: string[]
     type?: ChatflowType
+    userId?: string
+    organizationId?: string
 }
 
 export interface IChatMessage {
@@ -45,6 +66,7 @@ export interface IChatMessage {
     fileUploads?: string
     chatType: string
     chatId: string
+    userId: string
     memoryType?: string
     sessionId?: string
     createdDate: Date
@@ -253,6 +275,9 @@ export interface ICredentialReqBody {
     name: string
     credentialName: string
     plainDataObj: ICredentialDataDecrypted
+    userId?: string
+    organizationId?: string
+    visibility?: ChatflowVisibility[]
 }
 
 // Decrypted credential object sent back to client

@@ -1,6 +1,14 @@
 /* eslint-disable */
-import { Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn } from 'typeorm'
+import { Entity, Column, Index, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn, DeleteDateColumn } from 'typeorm'
 import { ChatflowType, IChatFlow } from '../../Interface'
+
+export enum ChatflowVisibility {
+    PRIVATE = 'Private',
+    PUBLIC = 'Public',
+    ORGANIZATION = 'Organization',
+    ANSWERAI = 'AnswerAI',
+    MARKETPLACE = 'Marketplace'
+}
 
 @Entity()
 export class ChatFlow implements IChatFlow {
@@ -9,6 +17,9 @@ export class ChatFlow implements IChatFlow {
 
     @Column()
     name: string
+
+    @Column({ nullable: true, type: 'text' })
+    description?: string
 
     @Column({ type: 'text' })
     flowData: string
@@ -25,6 +36,16 @@ export class ChatFlow implements IChatFlow {
     @Column({ nullable: true, type: 'text' })
     chatbotConfig?: string
 
+    @Column({
+        type: 'simple-array',
+        enum: ChatflowVisibility,
+        default: 'Private'
+    })
+    visibility?: ChatflowVisibility[]
+
+    @Column({ nullable: true, type: 'text' })
+    answersConfig?: string
+
     @Column({ nullable: true, type: 'text' })
     apiConfig?: string
 
@@ -40,6 +61,18 @@ export class ChatFlow implements IChatFlow {
     @Column({ nullable: true, type: 'text' })
     type?: ChatflowType
 
+    @Index()
+    @Column({ type: 'text', nullable: true })
+    parentChatflowId?: string
+
+    @Index()
+    @Column({ type: 'uuid', nullable: true })
+    userId?: string
+
+    @Index()
+    @Column({ type: 'uuid', nullable: true })
+    organizationId?: string
+
     @Column({ type: 'timestamp' })
     @CreateDateColumn()
     createdDate: Date
@@ -47,4 +80,7 @@ export class ChatFlow implements IChatFlow {
     @Column({ type: 'timestamp' })
     @UpdateDateColumn()
     updatedDate: Date
+
+ @DeleteDateColumn()
+  deletedDate: Date
 }

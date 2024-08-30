@@ -55,7 +55,8 @@ export const initNode = (nodeData, newNodeId) => {
         'file',
         'folder',
         'tabs',
-        'conditionFunction' // This is a special type for condition functions
+        'conditionFunction', // This is a special type for condition functions
+        'contentfulConfig'
     ]
 
     // Inputs
@@ -385,7 +386,20 @@ export const sanitizeChatflows = (arrayChatflows) => {
     return sanitizedChatflows
 }
 
-export const generateExportFlowData = (flowData) => {
+export const generateExportFlowData = (chatflow) => {
+    let flowData
+    try {
+        flowData = JSON.parse(chatflow.flowData)
+    } catch (error) {
+        return {
+            id: chatflow?.id,
+            name: chatflow?.name,
+            description: chatflow?.description,
+            nodes: [],
+            edges: [],
+            error: error
+        }
+    }
     const nodes = flowData.nodes
     const edges = flowData.edges
 
@@ -427,6 +441,15 @@ export const generateExportFlowData = (flowData) => {
         nodes[i].data = newNodeData
     }
     const exportJson = {
+        id: chatflow.id,
+        name: chatflow.name,
+        description: chatflow.description,
+        chatbotConfig: chatflow.chatbotConfig,
+        visibility: chatflow.visibility,
+        category: chatflow.category,
+        type: chatflow.type,
+        userId: chatflow.userId,
+        organizationId: chatflow.organizationId,
         nodes,
         edges
     }

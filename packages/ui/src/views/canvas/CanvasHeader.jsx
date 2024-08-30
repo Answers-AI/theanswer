@@ -8,7 +8,16 @@ import { useTheme } from '@mui/material/styles'
 import { Avatar, Box, ButtonBase, Typography, Stack, TextField } from '@mui/material'
 
 // icons
-import { IconSettings, IconChevronLeft, IconDeviceFloppy, IconPencil, IconCheck, IconX, IconCode } from '@tabler/icons-react'
+import {
+    IconSettings,
+    IconChevronLeft,
+    IconDeviceFloppy,
+    IconPencil,
+    IconCheck,
+    IconX,
+    IconCode,
+    IconAdjustmentsHorizontal
+} from '@tabler/icons-react'
 
 // project imports
 import Settings from '@/views/settings'
@@ -23,6 +32,7 @@ import chatflowsApi from '@/api/chatflows'
 
 // Hooks
 import useApi from '@/hooks/useApi'
+import { useFlags } from 'flagsmith/react'
 
 // utils
 import { generateExportFlowData } from '@/utils/genericHelper'
@@ -34,6 +44,7 @@ import ViewLeadsDialog from '@/ui-component/dialog/ViewLeadsDialog'
 
 const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlow, handleLoadFlow }) => {
     const theme = useTheme()
+    const flags = useFlags(['chatflow:share:external'])
     const dispatch = useDispatch()
     const navigate = useNavigate()
     const flowNameRef = useRef()
@@ -90,18 +101,18 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
             setChatflowConfigurationDialogOpen(true)
         } else if (setting === 'duplicateChatflow') {
             try {
-                let flowData = chatflow.flowData
-                const parsedFlowData = JSON.parse(flowData)
-                flowData = JSON.stringify(parsedFlowData)
-                localStorage.setItem('duplicatedFlowData', flowData)
+                const flowData = generateExportFlowData(chatflow)
+                // Remove the id when duplicating
+                delete flowData.id
+                flowData.name = `Copy of ${flowData.name}`
+                localStorage.setItem('duplicatedFlowData', JSON.stringify(flowData))
                 window.open(`${uiBaseURL}/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`, '_blank')
             } catch (e) {
                 console.error(e)
             }
         } else if (setting === 'exportChatflow') {
             try {
-                const flowData = JSON.parse(chatflow.flowData)
-                let dataStr = JSON.stringify(generateExportFlowData(flowData), null, 2)
+                let dataStr = JSON.stringify(generateExportFlowData(chatflow), null, 2)
                 let dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
 
                 let exportFileDefaultName = `${chatflow.name} ${title}.json`
@@ -173,13 +184,24 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
     }
 
     const onSaveChatflowClick = () => {
-        if (chatflow.id) handleSaveFlow(flowName)
-        else setFlowDialogOpen(true)
+        if (chatflow.id) {
+            handleSaveFlow(chatflow.name)
+        } else {
+            setFlowDialogOpen(true)
+        }
     }
 
-    const onConfirmSaveName = (flowName) => {
+    const onConfirmSaveName = (newName) => {
         setFlowDialogOpen(false)
-        handleSaveFlow(flowName)
+        handleSaveFlow(newName)
+    }
+
+    const onConfigurationButtonClick = () => {
+        setChatflowConfigurationDialogProps({
+            title: `${title} Configuration`,
+            chatflow: chatflow
+        })
+        setChatflowConfigurationDialogOpen(true)
     }
 
     useEffect(() => {
@@ -330,7 +352,27 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                     </Box>
                 </Stack>
                 <Box>
-                    {chatflow?.id && (
+                    <ButtonBase title='Custom Action' sx={{ borderRadius: '50%', mr: 2 }}>
+                        <Avatar
+                            variant='rounded'
+                            sx={{
+                                ...theme.typography.commonAvatar,
+                                ...theme.typography.mediumAvatar,
+                                transition: 'all .2s ease-in-out',
+                                background: theme.palette.secondary.light,
+                                color: theme.palette.secondary.dark,
+                                '&:hover': {
+                                    background: theme.palette.secondary.dark,
+                                    color: theme.palette.secondary.light
+                                }
+                            }}
+                            color='inherit'
+                            onClick={onConfigurationButtonClick}
+                        >
+                            <IconAdjustmentsHorizontal stroke={1.5} size='1.3rem' />
+                        </Avatar>
+                    </ButtonBase>
+                    {chatflow?.id && flags?.['chatflow:share:external']?.enabled && (
                         <ButtonBase title='API Endpoint' sx={{ borderRadius: '50%', mr: 2 }}>
                             <Avatar
                                 variant='rounded'
@@ -411,6 +453,14 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                 }}
                 onCancel={() => setFlowDialogOpen(false)}
                 onConfirm={onConfirmSaveName}
+                defaultValues={{
+                    name: chatflow?.name || '',
+                    description: chatflow?.description || '',
+                    visibility: chatflow?.visibility || [],
+                    category: chatflow?.category || '',
+                    type: chatflow?.type || '',
+                    chatbotConfig: chatflow?.chatbotConfig || ''
+                }}
             />
             <APICodeDialog show={apiDialogOpen} dialogProps={apiDialogProps} onCancel={() => setAPIDialogOpen(false)} />
             <ViewMessagesDialog

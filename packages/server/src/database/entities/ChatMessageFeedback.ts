@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { Entity, Column, CreateDateColumn, PrimaryGeneratedColumn, Index, Unique } from 'typeorm'
+import { Entity, Column, CreateDateColumn, PrimaryGeneratedColumn, Index, Unique, DeleteDateColumn } from 'typeorm'
 import { IChatMessageFeedback, ChatMessageRatingType } from '../../Interface'
 
 @Entity()
@@ -28,4 +28,15 @@ export class ChatMessageFeedback implements IChatMessageFeedback {
     @Column({ type: 'timestamp' })
     @CreateDateColumn()
     createdDate: Date
+
+    @Index()
+    @Column({ type: 'uuid', nullable: true })
+    userId?: string
+
+    @Index()
+    @Column({ type: 'uuid', nullable: true })
+    organizationId?: string
+
+    @DeleteDateColumn()
+    deletedDate: Date
 }

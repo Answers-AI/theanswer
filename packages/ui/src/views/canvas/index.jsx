@@ -65,7 +65,8 @@ const Canvas = () => {
 
     const { state } = useLocation()
     const templateFlowData = state ? state.templateFlowData : ''
-
+    const templateName = state ? state.templateName : ''
+    const parentChatflowId = state && isNaN(state.parentChatflowId) ? state.parentChatflowId : undefined
     const URLpath = document.location.pathname.toString().split('/')
     const chatflowId =
         URLpath[URLpath.length - 1] === 'canvas' || URLpath[URLpath.length - 1] === 'agentcanvas' ? '' : URLpath[URLpath.length - 1]
@@ -153,16 +154,76 @@ const Canvas = () => {
         setEdges((eds) => addEdge(newEdge, eds))
     }
 
-    const handleLoadFlow = (file) => {
+    const handleLoadFlow = async (file) => {
         try {
             const flowData = JSON.parse(file)
             const nodes = flowData.nodes || []
+            const edges = flowData.edges || []
 
+            let existingChatflow = null
+            let hasAccess = false
+
+            if (flowData.id) {
+                try {
+                    existingChatflow = await chatflowsApi.getSpecificChatflow(flowData.id)
+                    hasAccess = true
+                } catch (error) {
+                    if (error.response && error.response.status === 401) {
+                        console.log("User doesn't have access to this chatflow. Creating a new one.")
+                        hasAccess = false
+                    } else {
+                        throw error // Re-throw if it's not a 401 error
+                    }
+                }
+            }
+
+            if (existingChatflow && hasAccess) {
+                // Ask user if they want to overwrite or create a new chatflow
+                const userChoice = await confirm({
+                    title: 'Chatflow already exists',
+                    description: 'Do you want to overwrite the existing chatflow or create a new one?',
+                    confirmButtonName: 'Overwrite',
+                    cancelButtonName: 'Create New'
+                })
+
+                if (!userChoice) {
+                    // Create new chatflow
+                    delete flowData.id
+                }
+            } else {
+                // User doesn't have access or chatflow doesn't exist, create a new chatflow
+                delete flowData.id
+            }
+
+            const newChatflow = {
+                id: flowData.id, // This will be undefined if we're creating a new chatflow
+                name: flowData.name || `Copy of ${flowData.name}`,
+                description: flowData.description,
+                chatbotConfig: flowData.chatbotConfig,
+                visibility: flowData.visibility,
+                category: flowData.category,
+                type: flowData.type,
+                flowData: JSON.stringify({ nodes, edges })
+            }
+            dispatch({ type: SET_CHATFLOW, chatflow: newChatflow })
             setNodes(nodes)
-            setEdges(flowData.edges || [])
+            setEdges(edges)
             setTimeout(() => setDirty(), 0)
         } catch (e) {
             console.error(e)
+            enqueueSnackbar({
+                message: 'Failed to load chatflow: ' + e.message,
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'error',
+                    persist: true,
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
         }
     }
 
@@ -177,7 +238,7 @@ const Canvas = () => {
 
         if (isConfirmed) {
             try {
-                await chatflowsApi.deleteChatflow(chatflow.id)
+                await chatflowsApi.deleteChatflow(chatflow.id, chatflow.userId, chatflow.organizationId)
                 localStorage.removeItem(`${chatflow.id}_INTERNAL`)
                 navigate(isAgentCanvas ? '/agentflows' : '/')
             } catch (error) {
@@ -218,18 +279,41 @@ const Canvas = () => {
             const flowData = JSON.stringify(rfInstanceObject)
 
             if (!chatflow.id) {
-                const newChatflowBody = {
-                    name: chatflowName,
-                    deployed: false,
-                    isPublic: false,
-                    flowData,
-                    type: isAgentCanvas ? 'MULTIAGENT' : 'CHATFLOW'
+                const duplicatedFlowData = localStorage.getItem('duplicatedFlowData')
+                let newChatflowBody
+                if (duplicatedFlowData) {
+                    const parsedData = JSON.parse(duplicatedFlowData)
+                    newChatflowBody = {
+                        ...parsedData,
+                        name: chatflowName,
+                        flowData,
+                        deployed: false,
+                        isPublic: false
+                    }
+                    localStorage.removeItem('duplicatedFlowData')
+                } else {
+                    newChatflowBody = {
+                        name: chatflowName,
+                        parentChatflowId,
+                        deployed: false,
+                        isPublic: false,
+                        flowData,
+                        type: isAgentCanvas ? 'MULTIAGENT' : 'CHATFLOW',
+                        description: chatflow.description || '',
+                        visibility: chatflow.visibility || [],
+                        category: chatflow.category || '',
+                        chatbotConfig: chatflow.chatbotConfig || ''
+                    }
                 }
                 createNewChatflowApi.request(newChatflowBody)
             } else {
                 const updateBody = {
                     name: chatflowName,
-                    flowData
+                    flowData,
+                    description: chatflow.description,
+                    visibility: chatflow.visibility,
+                    category: chatflow.category,
+                    chatbotConfig: chatflow.chatbotConfig
                 }
                 updateChatflowApi.request(chatflow.id, updateBody)
             }
@@ -418,7 +502,7 @@ const Canvas = () => {
             const chatflow = createNewChatflowApi.data
             dispatch({ type: SET_CHATFLOW, chatflow })
             saveChatflowSuccess()
-            window.history.replaceState(state, null, `/${isAgentCanvas ? 'agentcanvas' : 'canvas'}/${chatflow.id}`)
+            window.history.replaceState(null, null, `/${isAgentCanvas ? 'agentcanvas' : 'canvas'}/${chatflow.id}`)
         } else if (createNewChatflowApi.error) {
             errorFailed(`Failed to save ${canvasTitle}: ${createNewChatflowApi.error.response.data.message}`)
         }
@@ -439,7 +523,7 @@ const Canvas = () => {
     }, [updateChatflowApi.data, updateChatflowApi.error])
 
     useEffect(() => {
-        setChatflow(canvasDataStore.chatflow)
+        setChatflow({ ...canvasDataStore.chatflow, parentChatflowId })
         if (canvasDataStore.chatflow) {
             const flowData = canvasDataStore.chatflow.flowData ? JSON.parse(canvasDataStore.chatflow.flowData) : []
             checkIfUpsertAvailable(flowData.nodes || [], flowData.edges || [])
@@ -457,18 +541,30 @@ const Canvas = () => {
             getSpecificChatflowApi.request(chatflowId)
         } else {
             if (localStorage.getItem('duplicatedFlowData')) {
-                handleLoadFlow(localStorage.getItem('duplicatedFlowData'))
+                const duplicatedFlowData = JSON.parse(localStorage.getItem('duplicatedFlowData'))
+                setNodes(duplicatedFlowData.nodes || [])
+                setEdges(duplicatedFlowData.edges || [])
+                dispatch({
+                    type: SET_CHATFLOW,
+                    chatflow: {
+                        ...duplicatedFlowData,
+                        id: undefined,
+                        name: `Copy of ${duplicatedFlowData.name}`,
+                        deployed: false,
+                        isPublic: false
+                    }
+                })
                 setTimeout(() => localStorage.removeItem('duplicatedFlowData'), 0)
             } else {
                 setNodes([])
                 setEdges([])
+                dispatch({
+                    type: SET_CHATFLOW,
+                    chatflow: {
+                        name: templateName ? `Copy of ${templateName}` : `Untitled ${canvasTitle}`
+                    }
+                })
             }
-            dispatch({
-                type: SET_CHATFLOW,
-                chatflow: {
-                    name: `Untitled ${canvasTitle}`
-                }
-            })
         }
 
         getNodesApi.request()

@@ -45,6 +45,7 @@ import { buildAgentGraph } from './buildAgentGraph'
 import { getErrorMessage } from '../errors/utils'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { IAction } from 'flowise-components'
+import checkOwnership from './checkOwnership'
 
 /**
  * Build Chatflow
@@ -72,9 +73,10 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         const chatId = incomingInput.chatId ?? incomingInput.overrideConfig?.sessionId ?? uuidv4()
         const userMessageDateTime = new Date()
 
-        if (!isInternal) {
+        if (!isInternal && !chatflow?.isPublic) {
+            const isOwner = await checkOwnership(chatflow, req.user)
             const isKeyValidated = await utilValidateKey(req, chatflow)
-            if (!isKeyValidated) {
+            if (!isOwner && !isKeyValidated) {
                 throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
             }
         }
@@ -183,6 +185,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                 chatId,
                 memoryType ?? '',
                 sessionId,
+                req.user?.id!,
                 userMessageDateTime,
                 fileUploads,
                 incomingInput,
@@ -358,7 +361,9 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                   uploads: incomingInput.uploads,
                   socketIO,
                   socketIOClientId: incomingInput.socketIOClientId,
-                  prependMessages
+                  prependMessages,
+                  user: req.user,
+                  sessionId
               })
             : await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
                   chatId,
@@ -368,7 +373,9 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                   databaseEntities,
                   analytic: chatflow.analytic,
                   uploads: incomingInput.uploads,
-                  prependMessages
+                  prependMessages,
+                  user: req.user,
+                  sessionId
               })
         result = typeof result === 'string' ? { text: result } : result
 
@@ -386,6 +393,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             memoryType,
             sessionId,
             createdDate: userMessageDateTime,
+            userId: req.user?.id!,
             fileUploads: incomingInput.uploads ? JSON.stringify(fileUploads) : undefined,
             leadEmail: incomingInput.leadEmail
         }
@@ -403,6 +411,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             chatType: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
             chatId,
             memoryType,
+            userId: req.user?.id!,
             sessionId
         }
         if (result?.sourceDocuments) apiMessage.sourceDocuments = JSON.stringify(result.sourceDocuments)
@@ -445,6 +454,7 @@ const utilBuildAgentResponse = async (
     chatId: string,
     memoryType: string,
     sessionId: string,
+    userId: string,
     userMessageDateTime: Date,
     fileUploads: IFileUpload[],
     incomingInput: IncomingInput,
@@ -468,7 +478,8 @@ const utilBuildAgentResponse = async (
                 sessionId,
                 createdDate: userMessageDateTime,
                 fileUploads: incomingInput.uploads ? JSON.stringify(fileUploads) : undefined,
-                leadEmail: incomingInput.leadEmail
+                leadEmail: incomingInput.leadEmail,
+                userId
             }
             await utilAddChatMessage(userMessage)
 
@@ -479,7 +490,8 @@ const utilBuildAgentResponse = async (
                 chatType: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
                 chatId,
                 memoryType,
-                sessionId
+                sessionId,
+                userId
             }
             if (sourceDocuments.length) apiMessage.sourceDocuments = JSON.stringify(sourceDocuments)
             if (usedTools.length) apiMessage.usedTools = JSON.stringify(usedTools)

@@ -6,6 +6,7 @@ import { createRateLimiter } from '../../utils/rateLimit'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { ChatflowType } from '../../Interface'
 import chatflowsService from '../../services/chatflows'
+import checkOwnership from '../../utils/checkOwnership'
 
 const checkIfChatflowIsValidForStreaming = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -42,7 +43,7 @@ const deleteChatflow = async (req: Request, res: Response, next: NextFunction) =
         if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsRouter.deleteChatflow - id not provided!`)
         }
-        const apiResponse = await chatflowsService.deleteChatflow(req.params.id)
+        const apiResponse = await chatflowsService.deleteChatflow(req.params.id, req.user)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -51,7 +52,16 @@ const deleteChatflow = async (req: Request, res: Response, next: NextFunction) =
 
 const getAllChatflows = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const apiResponse = await chatflowsService.getAllChatflows(req.query?.type as ChatflowType)
+        const userId = req.user?.id
+        if (!userId) {
+            return res.status(401).send('Unauthorized')
+        }
+        const filter = req.query.filter ? JSON.parse(decodeURIComponent(req.query.filter as string)) : undefined
+        const apiResponse = await chatflowsService.getAllChatflows(
+            req.query?.type as ChatflowType,
+            { ...res.locals.filter, ...filter },
+            req.user
+        )
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -80,10 +90,15 @@ const getChatflowByApiKey = async (req: Request, res: Response, next: NextFuncti
 
 const getChatflowById = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        if (!req.user) throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Error: chatflowsRouter.getChatflowById - Unauthorized!`)
+
         if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsRouter.getChatflowById - id not provided!`)
         }
-        const apiResponse = await chatflowsService.getChatflowById(req.params.id)
+        const apiResponse = await chatflowsService.getChatflowById(req.params.id, req.user)
+        if (!(await checkOwnership(apiResponse, req.user))) {
+            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
+        }
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -92,13 +107,37 @@ const getChatflowById = async (req: Request, res: Response, next: NextFunction) 
 
 const saveChatflow = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        if (!req.user) {
+            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Error: chatflowsRouter.saveChatflow - Unauthorized!`)
+        }
         if (!req.body) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsRouter.saveChatflow - body not provided!`)
         }
         const body = req.body
         const newChatFlow = new ChatFlow()
-        Object.assign(newChatFlow, body)
+
+        Object.assign(newChatFlow, { ...body, userId: req.user?.id, organizationId: req.user?.organizationId })
         const apiResponse = await chatflowsService.saveChatflow(newChatFlow)
+
+        // TODO: Abstract sending to AnswerAI through events endpoint and move to service
+        const ANSWERAI_DOMAIN = req.auth?.payload.answersDomain ?? process.env.ANSWERAI_DOMAIN ?? 'https://beta.theanswer.ai'
+        try {
+            await fetch(ANSWERAI_DOMAIN + '/api/sidekicks/new', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: 'Bearer ' + req.auth?.token!,
+                    cookie: req.headers.cookie!
+                },
+                body: JSON.stringify({
+                    chatflow: apiResponse,
+                    chatflowDomain: req.auth?.payload?.chatflowDomain
+                })
+            })
+        } catch (err) {
+            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsRouter.saveChatflow - AnswerAI sync failed!`)
+        }
+
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -120,11 +159,15 @@ const updateChatflow = async (req: Request, res: Response, next: NextFunction) =
         if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsRouter.updateChatflow - id not provided!`)
         }
-        const chatflow = await chatflowsService.getChatflowById(req.params.id)
+        const chatflow = await chatflowsService.getChatflowById(req.params.id, req.user)
         if (!chatflow) {
             return res.status(404).send(`Chatflow ${req.params.id} not found`)
         }
 
+        if (!(await checkOwnership(chatflow, req.user))) {
+            console.log('HEREEE')
+            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
+        }
         const body = req.body
         const updateChatFlow = new ChatFlow()
         Object.assign(updateChatFlow, body)
@@ -133,6 +176,26 @@ const updateChatflow = async (req: Request, res: Response, next: NextFunction) =
         createRateLimiter(updateChatFlow)
 
         const apiResponse = await chatflowsService.updateChatflow(chatflow, updateChatFlow)
+
+        // TODO: Abstract sending to AnswerAI through events endpoint and move to service
+        const ANSWERAI_DOMAIN = req.auth?.payload.answersDomain ?? process.env.ANSWERAI_DOMAIN ?? 'https://beta.theanswer.ai'
+        try {
+            await fetch(ANSWERAI_DOMAIN + '/api/sidekicks/new', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: 'Bearer ' + req.auth?.token!,
+                    cookie: req.headers.cookie!
+                },
+                body: JSON.stringify({
+                    chatflow: apiResponse,
+                    chatflowDomain: req.auth?.payload?.chatflowDomain
+                })
+            })
+        } catch (err) {
+            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsRouter.saveChatflow - AnswerAI sync failed!`)
+        }
+
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -147,7 +210,7 @@ const getSinglePublicChatflow = async (req: Request, res: Response, next: NextFu
                 `Error: chatflowsRouter.getSinglePublicChatflow - id not provided!`
             )
         }
-        const apiResponse = await chatflowsService.getSinglePublicChatflow(req.params.id)
+        const apiResponse = await chatflowsService.getSinglePublicChatflow(req.params.id, req.user)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -162,7 +225,7 @@ const getSinglePublicChatbotConfig = async (req: Request, res: Response, next: N
                 `Error: chatflowsRouter.getSinglePublicChatbotConfig - id not provided!`
             )
         }
-        const apiResponse = await chatflowsService.getSinglePublicChatbotConfig(req.params.id)
+        const apiResponse = await chatflowsService.getSinglePublicChatbotConfig(req.params.id, req.user)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

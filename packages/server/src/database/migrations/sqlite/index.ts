@@ -23,6 +23,16 @@ import { AddAgentReasoningToChatMessage1714679514451 } from './1714679514451-Add
 import { AddTypeToChatFlow1716300000000 } from './1716300000000-AddTypeToChatFlow'
 import { AddApiKey1720230151480 } from './1720230151480-AddApiKey'
 import { AddActionToChatMessage1721078251523 } from './1721078251523-AddActionToChatMessage'
+import { AddAnswersConfig1714692854264 } from './1714692854264-AddAnswersConfig'
+import { AddUser1716422641414 } from './1716422641414-AddUser'
+import { AddOrganizationId1717629010538 } from './1717629010538-AddOrganizationId'
+import { AddOrganization1717632419096 } from './1717632419096-AddOrganization'
+import { UpdateDefaultVisibility1717684633931 } from './1717684633931-UpdateDefaultVisibility'
+import { AddUserId1717773329048 } from './1717773329048-AddUserId'
+import { UpdateChatflowToHaveParentId1717796909629 } from './1717796909629-UpdateChatflowToHaveParentId'
+import { UpdateVisibilityType1719248473069 } from './1719248473069-UpdateVisibilityType'
+import { CredentialsVisibility1721247848452 } from './1721247848452-CredentialsVisibility'
+import { AddDescriptionToChatFlow1722099922876 } from './1722101786123-AddDescriptionToChatflow'
 
 export const sqliteMigrations = [
     Init1693835579790,
@@ -42,6 +52,8 @@ export const sqliteMigrations = [
     AddSpeechToText1706364937060,
     AddUpsertHistoryEntity1709814301358,
     AddFeedback1707213619308,
+    AddAnswersConfig1714692854264,
+    AddUser1716422641414,
     AddDocumentStore1711637331047,
     AddLead1710832117612,
     AddLeadToChatMessage1711537986113,
@@ -49,5 +61,13 @@ export const sqliteMigrations = [
     AddTypeToChatFlow1716300000000,
     AddVectorStoreConfigToDocStore1715861032479,
     AddApiKey1720230151480,
-    AddActionToChatMessage1721078251523
+    AddActionToChatMessage1721078251523,
+    AddOrganizationId1717629010538,
+    AddOrganization1717632419096,
+    UpdateDefaultVisibility1717684633931,
+    AddUserId1717773329048,
+    UpdateChatflowToHaveParentId1717796909629,
+    UpdateVisibilityType1719248473069,
+    CredentialsVisibility1721247848452,
+    AddDescriptionToChatFlow1722099922876
 ]
