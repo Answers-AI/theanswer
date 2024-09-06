@@ -284,6 +284,7 @@ const Chatflows = () => {
                         setError={setError}
                         type='chatflows'
                         onItemClick={goToCanvas}
+                        renderItem={renderItemCard}
                     />
                 </TabPanel>
             </Box>

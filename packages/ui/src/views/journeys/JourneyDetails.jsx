@@ -1,5 +1,6 @@
+'use client'
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams } from '@/utils/navigation'
 import { useDispatch, useSelector } from 'react-redux'
 import { Typography, Paper, Box, Divider, useTheme, Button } from '@mui/material'
 import { StyledButton } from '@/ui-component/button/StyledButton'

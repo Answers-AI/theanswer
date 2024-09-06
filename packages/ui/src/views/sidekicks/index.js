@@ -1,5 +1,6 @@
+'use client'
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from '@/utils/navigation'
 import { Grid, Typography } from '@mui/material'
 import MainCard from '@/ui-component/cards/MainCard'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
@@ -50,7 +51,7 @@ const Sidekicks = () => {
     )
 
     const goToSidekickDetails = (selectedSidekick) => {
-        navigate(`/sidekicks/${selectedSidekick.id}`)
+        navigate(`/sidekicks/${selectedSidekick.id}`, { isRoot: true })
     }
 
     return (

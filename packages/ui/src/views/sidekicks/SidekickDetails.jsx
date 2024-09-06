@@ -1,5 +1,6 @@
+'use client'
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams } from '@/utils/navigation'
 import PropTypes from 'prop-types'
 import { Typography, Paper, Box, Avatar, Divider, useTheme, Button, TextField } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
@@ -33,6 +34,7 @@ const SidekickDetails = ({ isCreating = false }) => {
     const [chatKey, setChatKey] = useState(0)
 
     const getChatflowApi = useApi(chatflowsApi.getSpecificChatflow)
+    // debugger
 
     useNotifier()
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))

@@ -1,5 +1,7 @@
+'use client'
+import PropTypes from 'prop-types'
 import { useState, useEffect, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from '@/utils/navigation'
 import { Box, Tabs, Tab, FormControl, InputLabel, Select, MenuItem } from '@mui/material'
 import { IconPlus } from '@tabler/icons-react'
 import FlowListView from '@/ui-component/lists/FlowListView'
@@ -22,6 +24,12 @@ function TabPanel(props) {
             {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
         </div>
     )
+}
+
+TabPanel.propTypes = {
+    children: PropTypes.node,
+    value: PropTypes.number.isRequired,
+    index: PropTypes.number.isRequired
 }
 
 const Journeys = () => {
@@ -76,11 +84,11 @@ const Journeys = () => {
 
     const handleJourneySetupComplete = (newJourneyDetails) => {
         setIsSetupDialogOpen(false)
-        navigate(`/journeys/${newJourneyDetails.id}`)
+        navigate(`/journeys/${newJourneyDetails.id}`, { isRoot: true })
     }
 
     const goToJourneyDetails = (selectedJourney) => {
-        navigate(`/journeys/${selectedJourney.id}`)
+        navigate(`/journeys/${selectedJourney.id}`, { isRoot: true })
     }
 
     const onSearchChange = (event) => {

@@ -6,6 +6,7 @@ import { styled, alpha } from '@mui/material/styles'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import FileCopyIcon from '@mui/icons-material/FileCopy'
+import FileDeleteIcon from '@mui/icons-material/Delete'
 import FileDownloadIcon from '@mui/icons-material/Downloading'
 import SettingsIcon from '@mui/icons-material/Settings'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
@@ -127,7 +128,7 @@ export default function FlowListMenu({ item, type, setError, updateFlowsApi }) {
                     }
                 })
             }
-        })
+        }
         setChatflowConfigurationDialogOpen(true)
     }
 

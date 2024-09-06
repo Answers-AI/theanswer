@@ -1,12 +1,13 @@
-import { useRouter as useNextRouter, usePathname as useNextPathname } from 'next/navigation'
+import { useRouter as useNextRouter, usePathname as useNextPathname, useParams as useNextParams } from 'next/navigation'
 import NextLink, { LinkProps as NextLinkProps } from 'next/link'
 import React from 'react'
 
 export const usePathname = useNextPathname
+export const useParams = useNextParams
 
 export const useNavigate = () => {
     const nextRouter = useNextRouter()
-    const navigate = (url: string | number, options?: { state?: any; replace?: boolean }) => {
+    const navigate = (url: string | number, options?: { state?: any; replace?: boolean; isRoot?: boolean }) => {
         // Handle faux history state
         console.log('navigate', url, options)
         if (options?.state) {
@@ -26,11 +27,12 @@ export const useNavigate = () => {
             nextRouter.refresh()
             return
         }
-        const fullUrl = `/sidekick-studio${url}`
+
+        const fullUrl = options?.isRoot ? url : `/sidekick-studio${url}`
         if (options?.replace) {
-            nextRouter.replace(fullUrl)
+            nextRouter.replace(fullUrl as string)
         } else {
-            nextRouter.push(fullUrl)
+            nextRouter.push(fullUrl as string)
         }
     }
 

@@ -7,6 +7,7 @@ import Box from '@mui/material/Box'
 import List from '@mui/material/List'
 import ListItem from '@mui/material/ListItem'
 import ListItemButton from '@mui/material/ListItemButton'
+import AccountTreeIcon from '@mui/icons-material/AccountTree'
 import MuiDrawer from '@mui/material/Drawer'
 import ListItemIcon from '@mui/material/ListItemIcon'
 import RateReviewIcon from '@mui/icons-material/RateReview'
@@ -65,15 +66,31 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
     })
 }))
 
-export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
+export const AppDrawer = ({ session, chatList }: any) => {
     const user = session?.user
     const [drawerOpen, setDrawerOpen] = useState(false)
     const [submenuOpen, setSubmenuOpen] = useState('')
     const pathname = usePathname()
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
     const flags = useFlags(['chatflow:use', 'chatflow:manage', 'org:manage'])
-    const MEMBER_ACTIONS = ['chatflows', 'agentflows', 'document-stores']
-    const BUILDER_ACTIONS = ['agentflows', 'assistants', 'tools', 'credentials', 'variables', 'apikey', 'documentstores']
+    const MEMBER_ACTIONS = ['chatflows', 'documentstores', 'credentials']
+    const BUILDER_ACTIONS = ['chatflows', 'agentflows', 'assistants', 'tools', 'credentials', 'variables', 'apikey', 'documentstores']
+
+    const topMenuItems = [
+        {
+            id: 'sidekicks',
+            text: 'Sidekicks',
+            link: '/sidekicks',
+            icon: <SmartToyOutlinedIcon color='primary' />
+        },
+        {
+            id: 'journeys',
+            text: 'Journeys',
+            link: '/journeys',
+            icon: <GroupsOutlinedIcon color='primary' />
+        }
+    ]
+
     const menuConfig = [
         {
             ...(flags['chatflow:use'].enabled
@@ -84,19 +101,19 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
                       subMenu: [
                           {
                               id: 'chatflows',
-                              text: 'Sidekicks',
+                              text: 'Chatflows',
                               link: '/sidekick-studio/chatflows',
-                              icon: <SmartToyOutlinedIcon color='primary' />
+                              icon: <AccountTreeIcon color='primary' />
                           },
                           {
                               id: 'agentflows',
-                              text: 'Sidekick Teams',
+                              text: 'Agent Flows',
                               link: '/sidekick-studio/agentflows',
                               icon: <GroupsOutlinedIcon color='primary' />
                           },
                           {
                               id: 'documentstores',
-                              text: 'Knowledge Bases',
+                              text: 'Document Stores',
                               link: '/sidekick-studio/document-stores',
                               icon: <MenuBookOutlinedIcon color='primary' />
                           },
@@ -108,7 +125,7 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
                           },
                           {
                               id: 'credentials',
-                              text: 'Integrations',
+                              text: 'Credentials',
                               link: '/sidekick-studio/credentials',
                               icon: <IntegrationInstructionsOutlinedIcon color='primary' />
                           },
@@ -124,7 +141,12 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
                               link: '/sidekick-studio/apikey',
                               icon: <VpnKeyOutlinedIcon color='primary' />
                           }
-                      ]
+                      ]?.filter(
+                          (item) =>
+                              // menu list collapse & items
+                              (MEMBER_ACTIONS?.includes(item.id) && flags['chatflow:use']?.enabled) ||
+                              (BUILDER_ACTIONS?.includes(item.id) && flags['chatflow:manage']?.enabled)
+                      )
                   }
                 : {})
         }
@@ -196,6 +218,33 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
                     </Box>
                 </Button>
             </Box>
+            <List disablePadding>
+                {topMenuItems.map((item) => (
+                    <ListItem key={item.id} disablePadding>
+                        <ListItemButton
+                            component={NextLink}
+                            href={item.link}
+                            selected={pathname === item.link}
+                            sx={{ minHeight: 48, justifyContent: drawerOpen ? 'initial' : 'center', px: 2.5 }}
+                        >
+                            <ListItemIcon sx={{ minWidth: 0, mr: drawerOpen ? 3 : 'auto', justifyContent: 'center' }}>
+                                {item.icon}
+                            </ListItemIcon>
+                            <Typography
+                                sx={{
+                                    opacity: drawerOpen ? 1 : 0,
+                                    transition: '.2s',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap'
+                                }}
+                            >
+                                {item.text}
+                            </Typography>
+                        </ListItemButton>
+                    </ListItem>
+                ))}
+            </List>
             <Box
                 sx={{
                     flex: 1,

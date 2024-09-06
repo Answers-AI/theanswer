@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import { Box, Grid, Skeleton, Typography } from '@mui/material'
 
-const FlowListView = ({ data, images = {}, nodeTypes= {}, isLoading, updateFlowsApi, setError, type, onItemClick, renderItem }) => {
+const FlowListView = ({ data, images = {}, nodeTypes = {}, isLoading, updateFlowsApi, setError, type, onItemClick, renderItem }) => {
     const finalData = data?.filter(Boolean) || []
 
     const handleItemClick = (item) => {
