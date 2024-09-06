@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect, useCallback, Fragment } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import PropTypes from 'prop-types'
 import socketIOClient from 'socket.io-client'
 import { cloneDeep } from 'lodash'
 import rehypeMathjax from 'rehype-mathjax'
@@ -39,7 +38,7 @@ import {
     IconDeviceSdCard,
     IconCheck
 } from '@tabler/icons-react'
-import robotPNG from '@/assets/images/robot.png'
+import robotPNG from '@/assets/images/answerai-logo.png'
 import userPNG from '@/assets/images/account.png'
 import multiagent_supervisorPNG from '@/assets/images/multiagent_supervisor.png'
 import multiagent_workerPNG from '@/assets/images/multiagent_worker.png'
@@ -49,6 +48,7 @@ import nextAgentGIF from '@/assets/images/next-agent.gif'
 // project import
 import { CodeBlock } from '@/ui-component/markdown/CodeBlock'
 import { MemoizedReactMarkdown } from '@/ui-component/markdown/MemoizedReactMarkdown'
+import MDXEditorMarkdown from '@/ui-component/markdown/MDXEditorMarkdown'
 import SourceDocDialog from '@/ui-component/dialog/SourceDocDialog'
 import ChatFeedbackContentDialog from '@/ui-component/dialog/ChatFeedbackContentDialog'
 import StarterPromptsCard from '@/ui-component/cards/StarterPromptsCard'
@@ -84,7 +84,7 @@ const messageImageStyle = {
     objectFit: 'cover'
 }
 
-export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setPreviews }) => {
+export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setPreviews, overrideConfig }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
@@ -526,28 +526,39 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
         if (selectedInput !== undefined && selectedInput.trim() !== '') input = selectedInput
 
         setLoading(true)
-        const urls = previews.map((item) => {
-            return {
-                data: item.data,
-                type: item.type,
-                name: item.name,
-                mime: item.mime
-            }
-        })
+        const urls =
+            previews && previews.length > 0
+                ? previews.map((item) => ({
+                      data: item.data,
+                      type: item.type,
+                      name: item.name,
+                      mime: item.mime
+                  }))
+                : []
         clearPreviews()
-        setMessages((prevMessages) => [...prevMessages, { message: input, type: 'userMessage', fileUploads: urls }])
+
+        try {
+            setMessages((prevMessages) => {
+                const newMessages = [...prevMessages, { message: input, type: 'userMessage', fileUploads: urls }]
+                return newMessages
+            })
+        } catch (err) {
+            console.error('Error in setMessages:', err)
+        }
 
         // Send user question to Prediction Internal API
         try {
             const params = {
                 question: input,
-                chatId
+                chatId,
+                overrideConfig: overrideConfig || {}
             }
             if (urls && urls.length > 0) params.uploads = urls
             if (leadEmail) params.leadEmail = leadEmail
             if (isChatFlowAvailableToStream) params.socketIOClientId = socketIOClientId
             if (action) params.action = action
 
+            console.log('Calling prediction API with params:', params)
             const response = await predictionApi.sendMessageAndGetPrediction(chatflowid, params)
 
             if (response.data) {
@@ -761,7 +772,11 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
     // Auto scroll chat to bottom
     useEffect(() => {
         scrollToBottom()
-    }, [messages])
+    }, [open, messages])
+
+    useEffect(() => {
+        console.log('ChatMessage - Received overrideConfig:', overrideConfig)
+    }, [overrideConfig])
 
     useEffect(() => {
         if (isDialog && inputRef) {
@@ -840,8 +855,8 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
 
     useEffect(() => {
         // wait for audio recording to load and then send
-        const containsAudio = previews.filter((item) => item.type === 'audio').length > 0
-        if (previews.length >= 1 && containsAudio) {
+        const containsAudio = previews?.filter((item) => item.type === 'audio').length > 0
+        if (previews?.length >= 1 && containsAudio) {
             setIsRecording(false)
             setRecordingNotSupported(false)
             handlePromptClick('')
@@ -1210,6 +1225,19 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                                                         {children}
                                                                                     </code>
                                                                                 )
+                                                                            },
+                                                                            blog_post: MDXEditorMarkdown,
+                                                                            outline({ children }) {
+                                                                                return (
+                                                                                    <ul
+                                                                                        style={{
+                                                                                            listStyleType: 'none',
+                                                                                            paddingLeft: '20px'
+                                                                                        }}
+                                                                                    >
+                                                                                        {children}
+                                                                                    </ul>
+                                                                                )
                                                                             }
                                                                         }}
                                                                     >
@@ -1369,18 +1397,30 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                             code({ inline, className, children, ...props }) {
                                                                 const match = /language-(\w+)/.exec(className || '')
                                                                 return !inline ? (
-                                                                    <CodeBlock
-                                                                        key={Math.random()}
-                                                                        chatflowid={chatflowid}
-                                                                        isDialog={isDialog}
-                                                                        language={(match && match[1]) || ''}
-                                                                        value={String(children).replace(/\n$/, '')}
-                                                                        {...props}
+                                                                    <MDXEditorMarkdown
+                                                                        markdown={String(children).replace(/\n$/, '')}
+                                                                        onChange={() => {}}
                                                                     />
                                                                 ) : (
+                                                                    // <CodeBlock
+                                                                    //     key={Math.random()}
+                                                                    //     chatflowid={chatflowid}
+                                                                    //     isDialog={isDialog}
+                                                                    //     language={(match && match[1]) || ''}
+                                                                    //     value={String(children).replace(/\n$/, '')}
+                                                                    //     {...props}
+                                                                    // />
                                                                     <code className={className} {...props}>
                                                                         {children}
                                                                     </code>
+                                                                )
+                                                            },
+                                                            blog_post: MDXEditorMarkdown,
+                                                            outline({ children }) {
+                                                                return (
+                                                                    <ul style={{ listStyleType: 'none', paddingLeft: '20px' }}>
+                                                                        {children}
+                                                                    </ul>
                                                                 )
                                                             }
                                                         }}
@@ -1776,13 +1816,4 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
             />
         </div>
     )
-}
-
-ChatMessage.propTypes = {
-    open: PropTypes.bool,
-    chatflowid: PropTypes.string,
-    isAgentCanvas: PropTypes.bool,
-    isDialog: PropTypes.bool,
-    previews: PropTypes.array,
-    setPreviews: PropTypes.func
 }

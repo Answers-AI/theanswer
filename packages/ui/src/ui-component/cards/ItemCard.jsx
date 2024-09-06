@@ -57,7 +57,9 @@ const ItemCard = ({ data: initialData, images, nodeTypes, onClick, type, updateF
                     className='flow-list-menu'
                 >
                     <FlowListMenu
+                        item={data}
                         isAgentCanvas={type === 'agentflows'}
+                        type={type}
                         chatflow={data}
                         setError={setError}
                         updateFlowsApi={updateFlowsApi}
