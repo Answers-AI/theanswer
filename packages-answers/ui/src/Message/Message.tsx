@@ -156,8 +156,6 @@ export const MessageCard = ({
                     chatflowid: chatflowid ?? '',
                     chatId: chatId ?? ''
                 })
-                // console.log('feedback ======>', feedback)
-                // setShowFeedback(true)
             } catch (err) {
                 setLastInteraction(undefined)
             }
