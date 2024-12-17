@@ -113,7 +113,7 @@ function migrationFunction(migration, context) {
     })
 }
 
-; (async () => {
+;(async () => {
     const options = {
         migrationFunction,
         spaceId: process.env.CONTENTFUL_SPACE_ID,

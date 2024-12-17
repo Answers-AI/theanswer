@@ -22,6 +22,7 @@ import { baseURL } from '@/store/constant'
 
 import { useUser } from '@auth0/nextjs-auth0/client'
 import { useFlags } from 'flagsmith/react'
+import PropTypes from 'prop-types'
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props
@@ -46,6 +47,12 @@ function TabPanel(props) {
             )}
         </div>
     )
+}
+
+TabPanel.propTypes = {
+    children: PropTypes.node,
+    value: PropTypes.number,
+    index: PropTypes.number
 }
 
 const Chatflows = () => {

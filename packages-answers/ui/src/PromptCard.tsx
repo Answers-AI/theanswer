@@ -4,22 +4,11 @@ import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
-import CardActions from '@mui/material/CardActions'
-import Button from '@mui/material/Button'
 import CardActionArea from '@mui/material/CardActionArea'
-import IconButton from '@mui/material/IconButton'
-import CardHeader from '@mui/material/CardHeader'
-import VisibilityIcon from '@mui/icons-material/Visibility'
-import ThumbUpIcon from '@mui/icons-material/ThumbUp'
-import ThumbDownIcon from '@mui/icons-material/ThumbDown'
-import MoreVert from '@mui/icons-material/MoreVert'
-import MenuButton from './MenuButton'
-import Favorite from '@mui/icons-material/Favorite'
-import Delete from '@mui/icons-material/Delete'
 
 import { useAnswers } from './AnswersContext'
 
-import { Prompt, StarterPrompt } from 'types'
+import { StarterPrompt } from 'types'
 interface PromptCardProps extends StarterPrompt {
     onClick: () => void
 }

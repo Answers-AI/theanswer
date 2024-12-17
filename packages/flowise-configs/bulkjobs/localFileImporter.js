@@ -76,7 +76,7 @@ async function processFilesFromDirectory(directoryPath) {
     }
 }
 
-; (async () => {
+;(async () => {
     console.log('Starting local file import...')
     await processFilesFromDirectory('./') // Update this with your directory path
 })()

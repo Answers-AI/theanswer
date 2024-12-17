@@ -28,13 +28,15 @@ async function entryListFieldReport(processor) {
                 row[field] = fieldValue.map((item) => `https:${item.fields.file.url}`).join('-')
             } else if (Array.isArray(fieldValue) && fieldValue.every((item) => item.sys && item.sys.type === 'Entry')) {
                 // Check if it's an array of entries and include the URLs with 'https:' prefix
-                row[field] = fieldValue.map((item) => item.fields.term).join('\n') // need to change this to the field you want to display 
+                row[field] = fieldValue.map((item) => item.fields.term).join('\n') // need to change this to the field you want to display
             } else if (fieldValue && fieldValue.sys && fieldValue.sys.type === 'Asset') {
                 // Check if it's an asset and include the URL with 'https:' prefix
                 const url = fieldValue.fields.file.url
                 row[field] = `https:${url}`
             } else if (fieldValue && field.indexOf('sys.id') > -1) {
-                row[field] = `https://app.contentful.com/spaces/${entry.sys.space.sys.id}/environments/${entry.sys.environment.sys.id}/entries/${fieldValue}`
+                row[
+                    field
+                ] = `https://app.contentful.com/spaces/${entry.sys.space.sys.id}/environments/${entry.sys.environment.sys.id}/entries/${fieldValue}`
             } else if (fieldValue) {
                 row[field] = fieldValue || 'N/A' // Fill with 'N/A' if field is missing, not an asset, or not an array of strings
             }

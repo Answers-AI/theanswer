@@ -20,10 +20,9 @@ const contentTypeId = 'block' // The ID of the 'block' content type
 const text = $text
 const imageURL = $imageURL || null // Set to null if no image URL is provided
 
-
 function getFilenameFromPath(urlOrPath) {
     // Use a regular expression to match the filename at the end of the path
-    const regex = /\/([^\/]+)$|\\([^\\]+)$/
+    const regex = /\/([^/]+)$|\\([^\\]+)$/
     const match = urlOrPath.match(regex)
 
     // Extract the filename if a match is found

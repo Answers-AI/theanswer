@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Box, Typography, IconButton, Chip, Tooltip, Divider, alpha, Button, Snackbar } from '@mui/material'
+import { Box, Typography, IconButton, Chip, Tooltip, alpha, Button } from '@mui/material'
 import { Sidekick } from 'types'
-import ShareIcon from '@mui/icons-material/Share'
 import {
     Star as StarIcon,
     StarBorder as StarBorderIcon,

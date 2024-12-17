@@ -5,7 +5,6 @@ const categorizeDocumentsFromContentful = async (processor) => {
         const entries = await fetchEntriesFromContentful(processor.sourceContentTypeId, processor?.filters)
         const overrideConfig = processor.overrideConfig || {}
 
-
         // Prepare the promises without awaiting them immediately
         const chatflowPromises = entries.map((entry) => {
             let question = ''

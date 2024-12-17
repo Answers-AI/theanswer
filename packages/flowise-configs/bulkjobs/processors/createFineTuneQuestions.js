@@ -8,7 +8,7 @@ const createFineTuneQuestions = {
     locale: 'en-US',
     persona: 'Publisher + Platform Solutions',
     answerAiData: (entry, overrideConfig = {}) => {
-        const fieldsToParse = ['glossaryTerms', 'title', 'summary', 'body'];
+        const fieldsToParse = ['glossaryTerms', 'title', 'summary', 'body']
         const richTextParsingRules = {
             'embedded-asset-block': true,
             'embedded-entry-block': true,

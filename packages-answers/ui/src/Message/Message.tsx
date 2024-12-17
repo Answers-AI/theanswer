@@ -3,38 +3,23 @@ import React, { useState } from 'react'
 import { AxiosError } from 'axios'
 import { useFlags } from 'flagsmith/react'
 import ReactMarkdown from 'react-markdown'
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { duotoneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import Image from 'next/image'
 import { JsonViewer } from '@textea/json-viewer'
 
 import Avatar from '@mui/material/Avatar'
 import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import Divider from '@mui/material/Divider'
-import IconButton from '@mui/material/IconButton'
 import Typography from '@mui/material/Typography'
-import CardMedia from '@mui/material/CardMedia'
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import ThumbUpIcon from '@mui/icons-material/ThumbUp'
-import ThumbDownIcon from '@mui/icons-material/ThumbDown'
-import ContentCopy from '@mui/icons-material/ContentCopy'
-import LinkIcon from '@mui/icons-material/Link'
 import AttachFileIcon from '@mui/icons-material/AttachFile'
-import PlayArrowIcon from '@mui/icons-material/PlayArrow'
-import OpenInFullIcon from '@mui/icons-material/OpenInFull'
 
 import { countTokens } from '@utils/utilities/countTokens'
 
 import { useAnswers } from '../AnswersContext'
 import { Accordion, AccordionSummary, AccordionDetails } from '../Accordion'
-import FeedbackModal from '@ui/FeedbackModal'
 import { AppService, Document, Message, FileUpload } from 'types'
 import { Rating } from 'db/generated/prisma-client'
-import { Card, CardContent, Chip, CircularProgress, Stack, Tooltip } from '@mui/material'
-import { CodePreview } from './CodePreview'
-import { PreviewDialog } from './PreviewDialog'
+import { Card, CardContent, Chip, Stack } from '@mui/material'
 import { getHTMLPreview, getReactPreview, isReactComponent } from '../utils/previewUtils'
 import { CodeCard } from './CodeCard'
 import nextAgentGIF from './../../../../packages/ui/src/assets/images/next-agent.gif'
@@ -391,7 +376,9 @@ export const MessageCard = ({
                                     </Box>
                                 ) : file.mime?.startsWith('audio/') ? (
                                     <Box sx={{ width: '100%' }}>
-                                        <audio controls src={file.data} style={{ width: '100%' }} />
+                                        <audio controls src={file.data} style={{ width: '100%' }}>
+                                            <track kind='captions' />
+                                        </audio>
                                     </Box>
                                 ) : (
                                     <Box

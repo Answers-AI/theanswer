@@ -7,19 +7,15 @@ import TextField from '@mui/material/TextField'
 import Tooltip from '@mui/material/Tooltip'
 import AttachFileIcon from '@mui/icons-material/PermMedia'
 import MicIcon from '@mui/icons-material/Mic'
-import StopIcon from '@mui/icons-material/Stop'
 import IconButton from '@mui/material/IconButton'
 import CloseIcon from '@mui/icons-material/Close'
 import { IconCircleDot } from '@tabler/icons-react'
-import Typography from '@mui/material/Typography'
-import SendIcon from '@mui/icons-material/Send'
 
 import { throttle } from '@utils/throttle'
 import { useAnswers } from './AnswersContext'
 
-import type { Sidekick, StarterPrompt } from 'types'
-import { DefaultPrompts } from './DefaultPrompts'
-import { FileUpload, SendMessageParams } from './AnswersContext'
+import type { Sidekick } from 'types'
+import { FileUpload } from './AnswersContext'
 
 const constraints = {
     isImageUploadAllowed: true,

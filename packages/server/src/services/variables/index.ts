@@ -4,7 +4,7 @@ import { Variable, VariableVisibility } from '../../database/entities/Variable'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import { IUser } from '../../Interface'
-import { Any, FindOptionsWhere, IsNull, Like } from 'typeorm'
+import { FindOptionsWhere, IsNull, Like } from 'typeorm'
 
 const createVariable = async (newVariable: Variable, user: IUser) => {
     try {

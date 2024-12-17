@@ -269,7 +269,8 @@ export function AnswersProvider({
     })
     const [chatId, setChatId] = useState<string | undefined>(initialChat?.id)
     // false to disable for now
-    const { data: chat } = useSWR<Chat>(!isStreaming && chatId && false ? `${apiUrl}/chats/${chatId}` : null, fetcher, {
+    const disableFetch = true
+    const { data: chat } = useSWR<Chat>(!isStreaming && chatId && !disableFetch ? `${apiUrl}/chats/${chatId}` : null, fetcher, {
         revalidateOnFocus: false,
         revalidateIfStale: false,
         // refreshInterval: isStreaming ? 0 : 1000,

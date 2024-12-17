@@ -28,6 +28,11 @@ export const Auth0Setup = ({ children, apiHost, accessToken }) => {
 
     return <Auth0Context.Provider value={{ isAuth0Ready, user }}>{children}</Auth0Context.Provider>
 }
+Auth0Setup.propTypes = {
+    children: PropTypes.node,
+    apiHost: PropTypes.string,
+    accessToken: PropTypes.string
+}
 
 const AppProvider = ({ children, apiHost, accessToken }) => {
     return (

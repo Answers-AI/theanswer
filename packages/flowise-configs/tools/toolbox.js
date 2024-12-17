@@ -12,103 +12,102 @@ const contentTypeId = 'block' // The ID of the 'block' content type
 const text = 'This is cool'
 const imageURL = 'https://images.ctfassets.net/imglmb3xms7o/2uc3ZV2MgBFtBTWCeldqm8/6476397d8e3729051488864942ce6165/laptop-rocket-icon.png'
 
-    ; (async () => {
-        // Function to create a new content entry
-        try {
-            const client = contentful.createClient(
+;(async () => {
+    // Function to create a new content entry
+    try {
+        const client = contentful.createClient(
+            {
+                accessToken: accessToken
+            },
+            { type: 'plain' }
+        )
+
+        // Convert text to rich text from markdown
+        const document = await richTextFromMarkdown(text)
+
+        // Create an asset if an image URL is provided
+        let mediaId = null
+        if (imageURL) {
+            console.log(`CONTENTFUL TOOL: Attempting to create an asset from an Image URL ${imageURL}`)
+            let assetId = null
+            const asset = await client.asset.create(
                 {
-                    accessToken: accessToken
+                    spaceId,
+                    environmentId
                 },
-                { type: 'plain' }
-            )
-
-            // Convert text to rich text from markdown
-            const document = await richTextFromMarkdown(text)
-
-            // Create an asset if an image URL is provided
-            let mediaId = null
-            if (imageURL) {
-                console.log(`CONTENTFUL TOOL: Attempting to create an asset from an Image URL ${imageURL}`)
-                let assetId = null
-                const asset = await client.asset.create(
-                    {
-                        spaceId,
-                        environmentId
-                    },
-                    {
-                        fields: {
-                            title: {
-                                'en-US': 'Image Asset'
-                            },
-                            file: {
-                                'en-US': {
-                                    contentType: 'image/jpeg', // Assuming JPEG format
-                                    fileName: 'testinganotherfilenameimage.jpg',
-                                    upload: imageURL
-                                }
+                {
+                    fields: {
+                        title: {
+                            'en-US': 'Image Asset'
+                        },
+                        file: {
+                            'en-US': {
+                                contentType: 'image/jpeg', // Assuming JPEG format
+                                fileName: 'testinganotherfilenameimage.jpg',
+                                upload: imageURL
                             }
                         }
                     }
-                )
-                console.log(`CONTENTFUL TOOL: Asset created successfully: ${asset.sys.id}`)
-                assetId = asset.sys.id
-                await client.asset.processForLocale(
-                    {
-                        spaceId: spaceId,
-                        environmentId: environmentId
-                    },
-                    { ...asset },
-                    'en-US'
-                )
+                }
+            )
+            console.log(`CONTENTFUL TOOL: Asset created successfully: ${asset.sys.id}`)
+            assetId = asset.sys.id
+            await client.asset.processForLocale(
+                {
+                    spaceId: spaceId,
+                    environmentId: environmentId
+                },
+                { ...asset },
+                'en-US'
+            )
 
-                const mediaEntry = await client.entry.create(
-                    {
-                        spaceId,
-                        environmentId,
-                        contentTypeId: 'media'
-                    },
-                    {
-                        fields: {
-                            internalTitle: {
-                                'en-US': 'Media Entry'
-                            },
-                            title: {
-                                'en-US': 'Media Entry'
-                            },
-                            ...(assetId ? { asset: { 'en-US': { sys: { type: 'Link', linkType: 'Asset', id: assetId } } } } : {})
-                        }
-                    }
-                )
-                mediaId = mediaEntry.sys.id
-            }
-            // Create a new entry
-            const newEntry = await client.entry.create(
+            const mediaEntry = await client.entry.create(
                 {
                     spaceId,
                     environmentId,
-                    contentTypeId
+                    contentTypeId: 'media'
                 },
                 {
                     fields: {
                         internalTitle: {
-                            'en-US': 'Block Entry'
+                            'en-US': 'Media Entry'
                         },
                         title: {
-                            'en-US': 'Block Entry'
+                            'en-US': 'Media Entry'
                         },
-                        body: {
-                            'en-US': document
-                        },
-                        ...(mediaId ? { mediaItems: { 'en-US': [{ sys: { type: 'Link', linkType: 'Entry', id: mediaId } }] } } : {})
+                        ...(assetId ? { asset: { 'en-US': { sys: { type: 'Link', linkType: 'Asset', id: assetId } } } } : {})
                     }
                 }
             )
-
-            console.log(`CONTENTFUL TOOL: Entry created successfully: EntryID: ${newEntry.sys.id}`)
-            return newEntry.sys.id
-        } catch (error) {
-            console.error('Error:', error)
-            return error.message
+            mediaId = mediaEntry.sys.id
         }
+        // Create a new entry
+        const newEntry = await client.entry.create(
+            {
+                spaceId,
+                environmentId,
+                contentTypeId
+            },
+            {
+                fields: {
+                    internalTitle: {
+                        'en-US': 'Block Entry'
+                    },
+                    title: {
+                        'en-US': 'Block Entry'
+                    },
+                    body: {
+                        'en-US': document
+                    },
+                    ...(mediaId ? { mediaItems: { 'en-US': [{ sys: { type: 'Link', linkType: 'Entry', id: mediaId } }] } } : {})
+                }
+            }
+        )
 
-    })()
+        console.log(`CONTENTFUL TOOL: Entry created successfully: EntryID: ${newEntry.sys.id}`)
+        return newEntry.sys.id
+    } catch (error) {
+        console.error('Error:', error)
+        return error.message
+    }
+})()

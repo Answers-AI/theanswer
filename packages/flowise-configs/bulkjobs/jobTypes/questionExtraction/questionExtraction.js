@@ -11,7 +11,7 @@ function getQuestionPromptsForArticle(articleTypes) {
     }
 
     // Set to store unique question types
-    let uniqueQuestionTypes = new Set();
+    let uniqueQuestionTypes = new Set()
 
     // Iterate over each article type provided
     articleTypes.forEach((type) => {
@@ -19,7 +19,7 @@ function getQuestionPromptsForArticle(articleTypes) {
         if (questions) {
             questions.forEach((questionType) => uniqueQuestionTypes.add(questionType))
         }
-    });
+    })
 
     // Convert unique question types to an array and map to include prompts
     return Array.from(uniqueQuestionTypes).map((type) => ({
@@ -54,11 +54,11 @@ const questionExtraction = async (processor) => {
             })
         }
 
-        let answerAiResponses = [];
+        let answerAiResponses = []
         // Process each question type
         for (let type in questionsTypeMap) {
             const entriesForType = questionsTypeMap[type]
-            console.log(`Processing ${type} questions for ${entriesForType.length} entries`);
+            console.log(`Processing ${type} questions for ${entriesForType.length} entries`)
             const questionPrompt = questionPrompts[type].prompt // Ensure you have a default prompt or handling for missing types
 
             const responses = await processDocumentsWithAnswerAI(entriesForType, processor, {

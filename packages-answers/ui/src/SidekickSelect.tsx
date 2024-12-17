@@ -31,8 +31,7 @@ import {
     MoreHoriz as MoreHorizIcon,
     Visibility as VisibilityIcon,
     Edit as EditIcon,
-    Cancel as CancelIcon,
-    Share as ShareIcon
+    Cancel as CancelIcon
 } from '@mui/icons-material'
 import { styled } from '@mui/system'
 import useSWR from 'swr'
@@ -729,27 +728,13 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
         </>
     )
 
-    if (noDialog) {
-        return <ContentWrapper>{content}</ContentWrapper>
-    }
-
     const handleCreateNewSidekick = () => {
         navigate('/canvas')
     }
 
-    const handleShare = useCallback((sidekick: Sidekick, e: React.MouseEvent) => {
-        e.stopPropagation()
-        if (!sidekick) return
-
-        // Create the share URL
-        const shareUrl = `${window.location.origin}/sidekick/${sidekick.id}`
-
-        // Copy to clipboard
-        navigator.clipboard.writeText(shareUrl).then(() => {
-            setShowCopyMessage(true)
-        })
-    }, [])
-
+    if (noDialog) {
+        return <ContentWrapper>{content}</ContentWrapper>
+    }
     return (
         <Box>
             <Button variant='outlined' onClick={() => setOpen(true)} endIcon={<ExpandMoreIcon />} sx={{ justifyContent: 'space-between' }}>

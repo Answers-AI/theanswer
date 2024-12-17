@@ -14,7 +14,18 @@ module.exports = {
         }
     },
     parser: '@typescript-eslint/parser',
-    ignorePatterns: ['**/node_modules', '**/dist', '**/build', '**/package-lock.json', '**/.gitbook/assets/*.json'],
+    ignorePatterns: [
+        '**/node_modules',
+        '**/dist',
+        '**/build',
+        '**/.next',
+        '**/.docusaurus',
+        '**/.turbo',
+        '**/package-lock.json',
+        '**/pnpm-lock.yaml',
+        '**/.gitbook/assets/*.json',
+        '**/generated'
+    ],
     plugins: ['unused-imports'],
     rules: {
         '@typescript-eslint/explicit-module-boundary-types': 'off',
@@ -22,7 +33,16 @@ module.exports = {
         'unused-imports/no-unused-imports': 'warn',
         'unused-imports/no-unused-vars': ['warn', { vars: 'all', varsIgnorePattern: '^_', args: 'after-used', argsIgnorePattern: '^_' }],
         'no-undef': 'off',
+
         'no-console': [process.env.CI ? 'error' : 'warn', { allow: ['warn', 'error', 'info'] }],
         'prettier/prettier': 'error'
-    }
+    },
+    overrides: [
+        {
+            files: ['*.json'],
+            rules: {
+                semi: 'off' // Turn off semicolon rule for JSON files
+            }
+        }
+    ]
 }

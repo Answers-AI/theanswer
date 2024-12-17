@@ -23,7 +23,6 @@ import useNotifier from '@/utils/useNotifier'
 
 // API
 import chatflowsApi from '@/api/chatflows'
-import Image from 'next/image'
 
 // If implementing a new provider, this must be updated in
 // components/src/speechToText.ts as well

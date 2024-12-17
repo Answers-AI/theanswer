@@ -1,4 +1,3 @@
-import React from 'react'
 import NextLink from 'next/link'
 
 import Box from '@mui/material/Box'
@@ -39,10 +38,10 @@ function JourneySection({ journeys }: Props) {
                         sx={{ height: 240, flexGrow: 1, maxWidth: 400, overflowY: 'auto' }}
                     >
                         {journeys?.map(({ id, title, filters, chats }) => (
-                            <NextLink href={`/journey/${id}`}>
+                            <NextLink key={id} href={`/journey/${id}`}>
                                 <TreeItem nodeId='1' label={title}>
                                     {chats?.map((chat) => (
-                                        <NextLink href={`/chat/${chat.id}`}>
+                                        <NextLink key={chat.id} href={`/chat/${chat.id}`}>
                                             <TreeItem nodeId='2' label={chat.prompt?.content} /> d
                                         </NextLink>
                                     ))}

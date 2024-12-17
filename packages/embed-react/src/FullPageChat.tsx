@@ -16,7 +16,7 @@ declare global {
 
 type FullPageChatElement = HTMLElement & Props
 
-export const FullPageChat = ({ style, className, ...assignableProps }: Props) => {
+export const FullPageChat = (props: Props) => {
     const ref = useRef<FullPageChatElement | null>(null)
 
     useEffect(() => {
@@ -27,8 +27,8 @@ export const FullPageChat = ({ style, className, ...assignableProps }: Props) =>
 
     useEffect(() => {
         if (!ref.current) return
-        Object.assign(ref.current, assignableProps)
-    }, [assignableProps])
+        Object.assign(ref.current, props)
+    }, [props])
 
-    return <aai-fullchatbot ref={ref} style={style} class={className} />
+    return <aai-fullchatbot ref={ref} style={props.style} class={props.className} />
 }

@@ -1,6 +1,7 @@
 const legaDocumentTagging = {
     name: 'legaDocumentTagging',
-    description: 'Categorize and label documents based on the content of the document, such as legal filings, correspondence, reports, evidence, supporting documents, or unknown.',
+    description:
+        'Categorize and label documents based on the content of the document, such as legal filings, correspondence, reports, evidence, supporting documents, or unknown.',
     // chatflowId: '6b5da243-c3b8-4ddf-9076-22178f0d5c65', // Production
     chatflowId: 'a8d28e49-3b6b-49cc-9e56-c3632e0b5e8c', // Localhost
     sourceContentTypeId: 'originalDocuments',

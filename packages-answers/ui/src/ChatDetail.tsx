@@ -8,10 +8,7 @@ import SourceDocumentModal from '@ui/SourceDocumentModal'
 import { useAnswers } from './AnswersContext'
 import ChatInput from './ChatInput'
 import DrawerFilters from './DrawerFilters/DrawerFilters'
-import NextLink from 'next/link'
 import Toolbar from '@mui/material/Toolbar'
-
-import ShareIcon from '@mui/icons-material/IosShare'
 
 import type { AppSettings, Document, Sidekick } from 'types'
 import SidekickSelect from './SidekickSelect'
@@ -19,7 +16,7 @@ import Drawer from './Drawer'
 import { ChatRoom } from './ChatRoom'
 import { FileUpload } from './AnswersContext'
 import AppBar from '@mui/material/AppBar'
-import { Button, Ic, Tooltip, TooltiponButton } from '@mui/material'
+import { Button, Tooltip } from '@mui/material'
 import { CodePreview } from './Message/CodePreview'
 
 const DISPLAY_MODES = {
